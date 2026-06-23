@@ -75,7 +75,7 @@ def checkout():
             """
             SELECT
                 item_id,
-                price
+                item_price
 
             FROM items
 

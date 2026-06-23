@@ -1,0 +1,48 @@
+# === Python Bytecode & Caches ===
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# === Virtual Environments ===
+.venv/
+venv/
+ENV/
+env/
+target/
+keys/
+
+# === Flask Specifics ===
+instance/
+.webassets-cache
+
+# === Environment Variables & Secrets ===
+.env
+.flaskenv
+*.env
+*.secret
+secrets.py
+
+# === SQLite Databases (if used locally) ===
+*.db
+*.sqlite
+*.sqlite3
+
+# === OS & System Files ===
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# === IDEs and Editors ===
+# VS Code
+.vscode/
+
+# PyCharm / IntelliJ
+.idea/
+
+# General text editors
+*.swp
+*~
+.project

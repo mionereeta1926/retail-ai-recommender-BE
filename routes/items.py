@@ -19,6 +19,21 @@ ATTACHMENT_URL = f"{CLOUDFRONT_DOMAIN}/"
 KEY_PAIR_ID = os.getenv("KEY_PAIR_ID")
 PRIVATE_KEY_PATH = os.getenv("PRIVATE_KEY_PATH")
 
+with open(PRIVATE_KEY_PATH, "rb") as f:
+    private_key = serialization.load_pem_private_key(
+        f.read(),
+        password=None
+    )
+
+def rsa_signer(message):
+    return private_key.sign(
+        message,
+        padding.PKCS1v15(),
+        hashes.SHA1()
+    )
+
+cf_signer = CloudFrontSigner(KEY_PAIR_ID, rsa_signer)
+
 items_bp = Blueprint("items", __name__)
 
 @items_bp.route("/items", methods=["GET"])
@@ -51,20 +66,7 @@ def get_items():
 
     items = []
 
-    with open(PRIVATE_KEY_PATH, "rb") as f:
-        private_key = serialization.load_pem_private_key(
-            f.read(),
-            password=None
-        )
-
-    def rsa_signer(message):
-        return private_key.sign(
-            message,
-            padding.PKCS1v15(),
-            hashes.SHA1()
-        )
-
-    cf_signer = CloudFrontSigner(KEY_PAIR_ID, rsa_signer)
+    
 
     for row in rows:
 
@@ -132,7 +134,7 @@ def get_item(item_id):
             "item_id": item[0],
             "item_name": item[1],
             "item_description": item[2],
-            "image_url": ATTACHMENT_URL + item[3],
+            "image_url": generate_signed_url(item[3], cf_signer=cf_signer),
             "item_price": item[4],
             "active": item[5]
 
@@ -177,7 +179,7 @@ def recommendations(item_id):
             "item_id": row[0],
             "item_name": row[2],
             "item_description": row[3],
-            "image_url": ATTACHMENT_URL + row[4],
+            "image_url": generate_signed_url(row[4], cf_signer=cf_signer),
             "item_price": row[5],
             "score": round(float(row[1]), 2)
         })

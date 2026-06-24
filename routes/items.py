@@ -5,11 +5,19 @@ import random
 import os
 from dotenv import load_dotenv
 
+from botocore.signers import CloudFrontSigner
+from helpers.key_handler import generate_signed_url
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import padding
+
+
 load_dotenv()
 
 CLOUDFRONT_DOMAIN = os.getenv("CLOUDFRONT_DOMAIN")
 BUCKET_NAME = os.getenv("BUCKET_NAME")
 ATTACHMENT_URL = f"{CLOUDFRONT_DOMAIN}/"
+KEY_PAIR_ID = os.getenv("KEY_PAIR_ID")
+PRIVATE_KEY_PATH = os.getenv("PRIVATE_KEY_PATH")
 
 items_bp = Blueprint("items", __name__)
 
@@ -43,6 +51,21 @@ def get_items():
 
     items = []
 
+    with open(PRIVATE_KEY_PATH, "rb") as f:
+        private_key = serialization.load_pem_private_key(
+            f.read(),
+            password=None
+        )
+
+    def rsa_signer(message):
+        return private_key.sign(
+            message,
+            padding.PKCS1v15(),
+            hashes.SHA1()
+        )
+
+    cf_signer = CloudFrontSigner(KEY_PAIR_ID, rsa_signer)
+
     for row in rows:
 
         items.append({
@@ -50,7 +73,7 @@ def get_items():
             "item_id": row[0],
             "item_name": row[1],
             "item_description": row[2],
-            "image_url": ATTACHMENT_URL + row[3],
+            "image_url": generate_signed_url(row[3], cf_signer=cf_signer),
             "item_price": row[4],
             "active": row[5]
 

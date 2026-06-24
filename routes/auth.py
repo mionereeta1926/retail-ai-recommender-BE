@@ -1,5 +1,5 @@
 from flask import Blueprint, request, session, jsonify, make_response
-from datetime import datetime, timedelta
+
 
 import bcrypt
 
@@ -8,12 +8,6 @@ from helpers.validator import validate_signup
 from helpers.validator import validate_login
 from helpers.email_helper import send_verification_email
 from helpers.email_helper import send_reset_password
-from helpers.key_handler import generate_policy
-
-# Sign policy
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import padding
-import base64
 
 import os
 from dotenv import load_dotenv
@@ -212,63 +206,53 @@ def login():
     # -----------------------------
     # CLOUDFRONT SIGNED COOKIES
     # -----------------------------
-    expiry = datetime.utcnow() + timedelta(hours=1)
+    # expiry = datetime.utcnow() + timedelta(hours=1)
 
-    policy = generate_policy(expiry)
+    # policy = generate_policy(expiry)
 
-    # Load private key
-    with open(PRIVATE_KEY_PATH, "rb") as f:
-        private_key = f.read()
+    # # Load private key
+    # with open(PRIVATE_KEY_PATH, "rb") as f:
+    #     private_key_bytes = f.read()
 
+    # signature = sign_policy(policy, private_key_bytes)
 
-    signature = base64.b64encode(
-        serialization.load_pem_private_key(
-            private_key,
-            password=None
-        ).sign(
-            policy.encode(),
-            padding.PKCS1v15(),
-            hashes.SHA1()
-        )
-    ).decode()
+    # policy_encoded = base64.b64encode(policy.encode()).decode()
 
-    policy_encoded = base64.b64encode(policy.encode()).decode()
-
-    # -----------------------------
-    # RESPONSE WITH COOKIES
-    # -----------------------------
+    # # -----------------------------
+    # # RESPONSE WITH COOKIES
+    # # -----------------------------
     response = make_response(jsonify({
         "success": True,
         "message": "Login successful",
         "user_id": user[0]
     }))
 
-    response.set_cookie(
-    "CloudFront-Policy",
-    policy_encoded,
-    httponly=True,
-    secure=True,
-    samesite="None",
-    domain=CLOUDFRONT_DOMAIN
-    )
+    # response.set_cookie(
+    # "CloudFront-Policy",
+    # policy_encoded,
+    # httponly=True,
+    # secure=False,
+    # samesite="None",
+    # domain=".cloudfront.net"
+    # )
 
-    response.set_cookie(
-        "CloudFront-Signature",
-        signature,
-        httponly=True,
-        samesite="None",
-        secure=True,
-        domain=CLOUDFRONT_DOMAIN
-    )
+    # response.set_cookie(
+    #     "CloudFront-Signature",
+    #     signature,
+    #     httponly=True,
+    #     samesite="None",
+    #     secure=False,
+    #     domain=".cloudfront.net"
+    # )
 
-    response.set_cookie(
-        "CloudFront-Key-Pair-Id",
-        KEY_PAIR_ID,
-        httponly=True,
-        samesite="None",
-        secure=True,
-        domain=CLOUDFRONT_DOMAIN
-    )
+    # response.set_cookie(
+    #     "CloudFront-Key-Pair-Id",
+    #     KEY_PAIR_ID,
+    #     httponly=True,
+    #     samesite="None",
+    #     secure=False,
+    #     domain=".cloudfront.net"
+    # )
 
     return response
 

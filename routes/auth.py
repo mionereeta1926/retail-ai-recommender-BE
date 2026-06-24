@@ -24,7 +24,7 @@ CLOUDFRONT_DOMAIN = os.getenv("CLOUDFRONT_DOMAIN")
 KEY_PAIR_ID = os.getenv("KEY_PAIR_ID")
 PRIVATE_KEY_PATH = os.getenv("PRIVATE_KEY_PATH")
 BUCKET_NAME = os.getenv("BUCKET_NAME")
-RESOURCE_URL = f"{CLOUDFRONT_DOMAIN}/{BUCKET_NAME}/*"
+RESOURCE_URL = f"{CLOUDFRONT_DOMAIN}/*"
 
 
 
@@ -249,7 +249,7 @@ def login():
     httponly=True,
     secure=True,
     samesite="None",
-    domain=".cloudfront.net"
+    domain=CLOUDFRONT_DOMAIN
     )
 
     response.set_cookie(
@@ -257,7 +257,8 @@ def login():
         signature,
         httponly=True,
         samesite="None",
-        secure=True
+        secure=True,
+        domain=CLOUDFRONT_DOMAIN
     )
 
     response.set_cookie(
@@ -265,7 +266,8 @@ def login():
         KEY_PAIR_ID,
         httponly=True,
         samesite="None",
-        secure=True
+        secure=True,
+        domain=CLOUDFRONT_DOMAIN
     )
 
     return response

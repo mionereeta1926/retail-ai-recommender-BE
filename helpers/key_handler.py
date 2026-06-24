@@ -8,7 +8,7 @@ CLOUDFRONT_DOMAIN = os.getenv("CLOUDFRONT_DOMAIN")
 KEY_PAIR_ID = os.getenv("KEY_PAIR_ID")
 PRIVATE_KEY_PATH = os.getenv("PRIVATE_KEY_PATH")
 BUCKET_NAME = os.getenv("BUCKET_NAME")
-RESOURCE_URL = f"{CLOUDFRONT_DOMAIN}/{BUCKET_NAME}/*"
+RESOURCE_URL = f"{CLOUDFRONT_DOMAIN}/*"
 
 def generate_policy(expiry_time):
     policy = {

@@ -9,7 +9,7 @@ load_dotenv()
 
 CLOUDFRONT_DOMAIN = os.getenv("CLOUDFRONT_DOMAIN")
 BUCKET_NAME = os.getenv("BUCKET_NAME")
-ATTACHMENT_URL = f"{CLOUDFRONT_DOMAIN}/{BUCKET_NAME}/"
+ATTACHMENT_URL = f"{CLOUDFRONT_DOMAIN}/"
 
 items_bp = Blueprint("items", __name__)
 

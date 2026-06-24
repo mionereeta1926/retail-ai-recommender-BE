@@ -121,53 +121,47 @@ def get_item(item_id):
 def recommendations(item_id):
 
     conn = get_connection()
-
     cursor = conn.cursor()
 
-    cursor.execute(
-        """
+    # ======================================================
+    # Get collaborative filtering recommendations ONLY
+    # ======================================================
+    cursor.execute("""
         SELECT
-            item_id,
-            item_name,
-            item_description,
-            image_url,
-            item_price
-
-        FROM items
-
-        WHERE active = TRUE
-        AND item_id != %s
-        """,
-        (item_id,)
-    )
+            ir.recommended_item_id,
+            ir.score,
+            i.item_name,
+            i.item_description,
+            i.image_url,
+            i.item_price
+        FROM item_recommendations ir
+        JOIN items i
+            ON i.item_id = ir.recommended_item_id
+        WHERE ir.item_id = %s
+          AND i.active = TRUE
+          AND ir.score >= 50
+        ORDER BY ir.score DESC
+        LIMIT 8
+    """, (item_id,))
 
     rows = cursor.fetchall()
 
-    conn.close()
+    recommendations_list = []
 
-    random.shuffle(rows)
+    for row in rows:
 
-    selected = rows[:4]
-
-    recommendations = []
-
-    for row in selected:
-
-        recommendations.append({
-
+        recommendations_list.append({
             "item_id": row[0],
-            "item_name": row[1],
-            "item_description": row[2],
-            "image_url": ATTACHMENT_URL + row[3],
-            "item_price": row[4],
-            "score": round(random.uniform(0.85, 0.99), 2)
-
+            "item_name": row[2],
+            "item_description": row[3],
+            "image_url": ATTACHMENT_URL + row[4],
+            "item_price": row[5],
+            "score": round(float(row[1]), 2)
         })
 
+    conn.close()
+
     return {
-
         "success": True,
-
-        "recommendations": recommendations
-
+        "recommendations": recommendations_list
     }
